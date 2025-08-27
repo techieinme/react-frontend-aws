@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ✅ Fix permissions before installing dependencies
+      # ✅ Fix permissions before installing dependencies.
       - name: Fix permissions
         run: sudo chown -R ec2-user:ec2-user $GITHUB_WORKSPACE
 
