@@ -1,4 +1,4 @@
-name: Build & Deploy React to EC2
+name: Build & Deploy React + Nginx
 
 on:
   push:
@@ -9,36 +9,43 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      # 1️⃣ Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
-      - name: Fix permissions
+      # 3️⃣ Fix permissions for self-hosted runner
+      - name: Fix workspace permissions
         run: sudo chown -R ec2-user:ec2-user $GITHUB_WORKSPACE
 
+      # 4️⃣ Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
+      # 5️⃣ Build React app
       - name: Build React app
         run: npm run build
 
-      - name: Deploy to /var/www/react-frontend
+      # 6️⃣ Deploy React build
+      - name: Deploy React frontend
         run: |
-          # Clear old files
           sudo rm -rf /var/www/react-frontend/*
           sudo mkdir -p /var/www/react-frontend
-
-          # Copy new build
           sudo cp -r $GITHUB_WORKSPACE/dist/* /var/www/react-frontend/
-
-          # Fix permissions for Nginx
           sudo chown -R nginx:nginx /var/www/react-frontend
           sudo chmod -R 755 /var/www/react-frontend
 
-          # Restart Nginx
-          sudo systemctl restart nginx
+      # 7️⃣ Deploy Nginx config
+      - name: Deploy Nginx config
+        run: |
+          sudo cp $GITHUB_WORKSPACE/nginx/react.conf /etc/nginx/conf.d/react.conf
+          sudo chown root:root /etc/nginx/conf.d/react.conf
+          sudo chmod 644 /etc/nginx/conf.d/react.conf
+          sudo nginx -t
+          sudo systemctl reload nginx
