@@ -1,7 +1,9 @@
 function App() {
   return (
     <>
-    <h1>Hello world Front end.</h1>
+   <div style={{display:"flex", alignItems:"center",margin:"0 auto"}}>
+     <h1>hello!!!! react frontend deployed ec2.</h1>
+   </div>
     </>
   )
 }
